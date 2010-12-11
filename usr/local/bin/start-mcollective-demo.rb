@@ -8,90 +8,88 @@ Facter.reset
 @facts = Facter.to_hash
 
 def configure_mcollective(server, mcollective_password, mcollective_location, psk=nil)
-	unless psk
-		pw = Passmakr.new(:phonemic, 8)
-		psk = pw.password[:string]
-	end
+    unless psk
+        pw = Passmakr.new(:phonemic, 8)
+        psk = pw.password[:string]
+    end
 
 
-	["server", "client"].each do |cfgfile|
-		templ = File.readlines("/etc/mcollective/#{cfgfile}.cfg.templ")
+    ["server", "client"].each do |cfgfile|
+        templ = File.readlines("/etc/mcollective/#{cfgfile}.cfg.templ")
 
-		File.open("/etc/mcollective/#{cfgfile}.cfg", "w") do |f|
-			templ.each do |l|
-				l.gsub!("@@hostname@@", @facts["hostname"])
-				l.gsub!("@@server@@", server)
-				l.gsub!("@@psk@@", psk)
-				l.gsub!("@@mcollective_password@@", mcollective_password)
-				l.gsub!("@@mcollective_location@@", mcollective_location)
+        File.open("/etc/mcollective/#{cfgfile}.cfg", "w") do |f|
+            templ.each do |l|
+                l.gsub!("@@hostname@@", @facts["hostname"])
+                l.gsub!("@@server@@", server)
+                l.gsub!("@@psk@@", psk)
+                l.gsub!("@@mcollective_password@@", mcollective_password)
+                l.gsub!("@@mcollective_location@@", mcollective_location)
 
-				f.puts l
-			end
-		end
-	end
+                f.puts l
+            end
+        end
+    end
 
-	puts("mcollective_psk=#{psk}") if @facts["mcollective"] == "server"
+    puts("mcollective_psk=#{psk}") if @facts["mcollective"] == "server"
 end
 
 def configure_activemq(mcollective_password)
-	templ = File.readlines("/etc/activemq/activemq.xml.templ")
+    templ = File.readlines("/etc/activemq/activemq.xml.templ")
 
-	File.open("/etc/activemq/activemq.xml", "w") do |f|
-		templ.each do |l|
-			l.gsub!("@@mcollective_password@@", mcollective_password)
+    File.open("/etc/activemq/activemq.xml", "w") do |f|
+        templ.each do |l|
+            l.gsub!("@@mcollective_password@@", mcollective_password)
 
-			f.puts l
-		end
-	end
+            f.puts l
+        end
+    end
 end
 
 if @facts.include?("mcollective")
-	mcollective_type = @facts["mcollective"]
+    mcollective_type = @facts["mcollective"]
 
-	if mcollective_type == "server"
-		puts("Configuring MCollective as a server...")
+    if mcollective_type == "server"
+        puts("Configuring MCollective as a server...")
 
-		pw = Passmakr.new(:phonemic, 8)
-		mcollective_password = pw.password[:string]
+        pw = Passmakr.new(:phonemic, 8)
+        mcollective_password = pw.password[:string]
         mcollective_location = @facts["ec2_placement_availability_zone"]
 
-		puts("\n\n======= User Data for nodes ======")
-		puts("mcollective=#{@facts['ipaddress']}")
-		puts("mcollective_password=#{mcollective_password}")
+        puts("\n\n======= User Data for nodes ======")
+        puts("mcollective=#{@facts['ipaddress']}")
+        puts("mcollective_password=#{mcollective_password}")
 
-		configure_mcollective("localhost", mcollective_password, mcollective_location)
-		configure_activemq(mcollective_password)
-		puts("==================================")
+        configure_mcollective("localhost", mcollective_password, mcollective_location)
+        configure_activemq(mcollective_password)
+        puts("==================================")
 
-		puts;puts
+        puts;puts
 
-		system("/etc/init.d/activemq restart")
+        system("/etc/init.d/activemq restart")
 
-		puts("\nSleeping 10 seconds...")
-		sleep 10
+        puts("\nSleeping 10 seconds...")
+        sleep 10
 
-		system("cp /root/mcollective-plugins-read-only/agent/registration-monitor/registration.rb /usr/libexec/mcollective/mcollective/agent/")
+        puts("Starting MCollective....")
+        system("/etc/init.d/mcollective restart")
+    elsif mcollective_type =~ /\d+\.\d+\.\d+\.\d+/
+        unless @facts.include?("mcollective_password") && @facts.include?("mcollective_psk")
+            STDERR.puts("mcollective_password and mcollective_psk user data was not set")
+            exit 1
+        end
 
-		puts("Starting MCollective....")
-		system("/etc/init.d/mcollective restart")
-	elsif mcollective_type =~ /\d+\.\d+\.\d+\.\d+/
-		unless @facts.include?("mcollective_password") && @facts.include?("mcollective_psk")
-			STDERR.puts("mcollective_password and mcollective_psk user data was not set")
-			exit 1
-		end
+        puts("Configuring MCollective as a node with server @ #{mcollective_type}...")
 
-		puts("Configuring MCollective as a node with server @ #{mcollective_type}...")
-
-		mcollective_password = @facts["mcollective_password"]
-		mcollective_psk = @facts["mcollective_psk"]
+        mcollective_password = @facts["mcollective_password"]
+        mcollective_psk = @facts["mcollective_psk"]
         mcollective_location = @facts["ec2_placement_availability_zone"]
 
-		configure_mcollective(mcollective_type, mcollective_password, mcollective_location, mcollective_psk)
-		system("/etc/init.d/mcollective restart")
+        configure_mcollective(mcollective_type, mcollective_password, mcollective_location, mcollective_psk)
+        system("/etc/init.d/mcollective restart")
 
-		system("cp /usr/local/etc/mcollective-node.motd /etc/motd")
-	end
+        system("cp /usr/local/etc/mcollective-node.motd /etc/motd")
+    end
 else
-	STDERR.puts("Please set mcollective=server|1.2.3.4 user data")
-	exit 1
+    STDERR.puts("Please set mcollective=server|1.2.3.4 user data")
+    exit 1
 end
