@@ -1,6 +1,6 @@
 #!/bin/bash
 
-yum install -y net-snmp-libs lm_sensors net-snmp perl-Socket6 nrpe perl-Crypt-DES perl-Digest-SHA1 nagios-plugins perl-Digest-HMAC perl-Net-SNMP xinetd dialog java-1.6.0-openjdk libselinux-ruby ruby-augeas ruby-shadow git rubygems
+yum install -y net-snmp-libs lm_sensors net-snmp perl-Socket6 nrpe perl-Crypt-DES perl-Digest-SHA1 nagios-plugins nagios-plugins-all perl-Digest-HMAC perl-Net-SNMP xinetd dialog java-1.6.0-openjdk libselinux-ruby ruby-augeas ruby-shadow git rubygems
 
 cd packages
 
