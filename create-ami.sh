@@ -13,3 +13,16 @@ cd ..
 cp -rv etc/* /etc/
 cp -rv usr/* /usr/
 cp -rv opt/* /opt/
+
+cp /dev/null /etc/motd
+
+cat <<EOT
+
+The EC2 demo has been prepared, bundle and upload it as below:
+
+   # cd /mnt
+   # ec2-bundle-vol -d /mnt -k pk-xxx.pem -c cert-xxx.pem -u 481328239245 -r i386
+   # ec2-upload-bundle -b mcollective-100-demo -m image.manifest.xml --location EU -a xxx -s xxx
+
+You need to place your EC2 certs in /mnt first
+EOT
