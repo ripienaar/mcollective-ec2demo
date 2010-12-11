@@ -14,8 +14,6 @@ cp -rv etc/* /etc/
 cp -rv usr/* /usr/
 cp -rv opt/* /opt/
 
-cp /dev/null /etc/motd
-
 cat <<EOT
 
 The EC2 demo has been prepared, bundle and upload it as below:
