@@ -3,6 +3,9 @@
 MCOLLECTIVE_RPM_VERSION="1.0.1-1.el5"
 S3_BUCKET_NAME="mcollective-101-demo"
 
+yum clean all
+yum makecache
+
 yum install -y net-snmp-libs lm_sensors net-snmp perl-Socket6 nrpe perl-Crypt-DES perl-Digest-SHA1 nagios-plugins nagios-plugins-all perl-Digest-HMAC perl-Net-SNMP xinetd dialog java-1.6.0-openjdk libselinux-ruby ruby-augeas ruby-shadow git rubygems
 
 cd packages
