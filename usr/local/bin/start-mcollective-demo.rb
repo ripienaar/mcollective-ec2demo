@@ -3,11 +3,14 @@
 require 'rubygems'
 require 'facter'
 require 'passmakr'
+require 'resolv'
 
 Facter.reset
 @facts = Facter.to_hash
 
 def configure_mcollective(server, mcollective_password, mcollective_location, psk=nil)
+    server = Resolv.getname(server) if server.match(/^\d+\.\d+\.\d+\.\d+$/)
+
     unless psk
         pw = Passmakr.new(:phonemic, 8)
         psk = pw.password[:string]
@@ -51,15 +54,26 @@ if @facts.include?("mcollective")
     if mcollective_type == "server"
         puts("Configuring MCollective as a server...")
 
-        pw = Passmakr.new(:phonemic, 8)
-        mcollective_password = pw.password[:string]
+        if @facts.include?("mcollective_password")
+            mcollective_password = @facts["mcollective_password"]
+        else
+            pw = Passmakr.new(:phonemic, 8)
+            mcollective_password = pw.password[:string]
+        end
+
+        if @facts.include?("mcollective_psk")
+            mcollective_psk = @facts["mcollective_psk"]
+        else
+            mcollective_psk = nil
+        end
+
         mcollective_location = @facts["ec2_placement_availability_zone"]
 
         puts("\n\n======= User Data for nodes ======")
         puts("mcollective=#{@facts['ipaddress']}")
         puts("mcollective_password=#{mcollective_password}")
 
-        configure_mcollective("localhost", mcollective_password, mcollective_location)
+        configure_mcollective("localhost", mcollective_password, mcollective_location, mcollective_psk)
         configure_activemq(mcollective_password)
         puts("==================================")
 
