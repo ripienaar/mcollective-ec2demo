@@ -4,7 +4,7 @@ yum install -y net-snmp-libs lm_sensors net-snmp perl-Socket6 nrpe perl-Crypt-DE
 
 cd packages
 
-yum -y --nogpgcheck localinstall activemq-5.4.0-2.el5.noarch.rpm mcollective-1.0.0-2.el5.noarch.rpm puppet-2.6.3-0.4.el5.noarch.rpm rubygem-stomp-1.1.6-1.el5.noarch.rpm activemq-info-provider-5.4.0-2.el5.noarch.rpm mcollective-client-1.0.0-2.el5.noarch.rpm facter-1.5.8-1.el5.noarch.rpm mcollective-common-1.0.0-2.el5.noarch.rpm rubygem-rdialog-0.5.0-1.noarch.rpm tanukiwrapper-3.2.3-1jpp.i386.rpm
+yum -y --nogpgcheck localinstall activemq-5.4.0-2.el5.noarch.rpm mcollective-1.0.1-1.el5.noarch.rpm puppet-2.6.3-0.4.el5.noarch.rpm rubygem-stomp-1.1.6-1.el5.noarch.rpm activemq-info-provider-5.4.0-2.el5.noarch.rpm mcollective-client-1.0.1-1.el5.noarch.rpm facter-1.5.8-1.el5.noarch.rpm mcollective-common-1.0.1-1.el5.noarch.rpm rubygem-rdialog-0.5.0-1.noarch.rpm tanukiwrapper-3.2.3-1jpp.i386.rpm
 
 gem install passmakr-1.0.0.gem
 
