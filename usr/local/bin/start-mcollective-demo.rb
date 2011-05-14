@@ -7,8 +7,10 @@ require 'resolv'
 
 Facter.reset
 @facts = Facter.to_hash
+@main_collective = "mcollective"
+@collectives = ["staging", "production"]
 
-def configure_mcollective(server, mcollective_password, mcollective_location, psk=nil)
+def configure_mcollective(server, mcollective_password, mcollective_location, collectives, psk=nil)
     server = Resolv.getname(server) if server.match(/^\d+\.\d+\.\d+\.\d+$/)
 
     unless psk
@@ -27,6 +29,8 @@ def configure_mcollective(server, mcollective_password, mcollective_location, ps
                 l.gsub!("@@psk@@", psk)
                 l.gsub!("@@mcollective_password@@", mcollective_password)
                 l.gsub!("@@mcollective_location@@", mcollective_location)
+                l.gsub!("@@main_collective@@", @main_collective)
+                l.gsub!("@@collectives@@", [@main_collective, collectives].flatten.join(","))
 
                 f.puts l
             end
@@ -73,7 +77,7 @@ if @facts.include?("mcollective")
         puts("mcollective=#{@facts['ipaddress']}")
         puts("mcollective_password=#{mcollective_password}")
 
-        configure_mcollective("localhost", mcollective_password, mcollective_location, mcollective_psk)
+        configure_mcollective("localhost", mcollective_password, mcollective_location, @collectives, mcollective_psk)
         configure_activemq(mcollective_password)
         puts("==================================")
 
@@ -97,8 +101,9 @@ if @facts.include?("mcollective")
         mcollective_password = @facts["mcollective_password"]
         mcollective_psk = @facts["mcollective_psk"]
         mcollective_location = @facts["ec2_placement_availability_zone"]
+        subcollective = @collectives[ rand(@collectives.size) ]
 
-        configure_mcollective(mcollective_type, mcollective_password, mcollective_location, mcollective_psk)
+        configure_mcollective(mcollective_type, mcollective_password, mcollective_location, subcollective, mcollective_psk)
         system("/etc/init.d/mcollective restart")
 
         system("cp /usr/local/etc/mcollective-node.motd /etc/motd")

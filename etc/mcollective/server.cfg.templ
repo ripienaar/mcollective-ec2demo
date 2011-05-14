@@ -1,5 +1,5 @@
 # main config
-topicprefix = /topic/mcollective
+topicprefix = /topic/
 libdir = /usr/libexec/mcollective
 logfile = /var/log/mcollective.log
 daemonize = 1
@@ -9,6 +9,8 @@ loglevel = debug
 identity = @@hostname@@
 registerinterval = 300
 registration = Meta
+main_collective = @@main_collective@@
+collectives = @@collectives@@
 
 # connector plugin config
 connector = stomp
